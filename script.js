@@ -4,6 +4,8 @@ const priorityColors = {
   high: "lightcoral",
 };
 
+const priorityOptions = ["low", "medium", "high"];
+
 document.addEventListener("DOMContentLoaded", () => {
   loadTasksFromLocalStorage();
 
@@ -62,24 +64,7 @@ function renderTask(task) {
   editBtn.className = "edit";
   editBtn.style.marginLeft = "5px";
   editBtn.addEventListener("click", () => {
-    const newText = prompt("Edit task text:", task.text);
-    const newPriority = prompt(
-      "Edit task priority (low, medium, high):",
-      task.priority,
-    );
-    const newDueDate = prompt("Edit task due date:", task.dueDate);
-
-    if (newText && newPriority) {
-      task.text = newText;
-      task.priority = newPriority;
-      task.dueDate = newDueDate; // Update due date
-
-      taskText.textContent = newText;
-      dueDateText.textContent = newDueDate ? `Due: ${newDueDate}` : ""; // Update due date in UI
-      listItem.style.backgroundColor = priorityColors[newPriority] || "#f9f9f9";
-
-      updateLocalStorage();
-    }
+    showEditModal(task, listItem);
   });
 
   const completeBtn = document.createElement("button");
@@ -108,6 +93,44 @@ function renderTask(task) {
   listItem.appendChild(deleteBtn);
 
   document.getElementById("task-list").appendChild(listItem);
+}
+
+function showEditModal(task, listItem) {
+  document.getElementById("edit-task-text").value = task.text;
+  document.getElementById("edit-task-priority").value = task.priority;
+  document.getElementById("edit-task-due-date").value = task.dueDate;
+
+  document.getElementById("save-edit-btn").onclick = () => {
+    const newText = document.getElementById("edit-task-text").value;
+    const newPriority = document.getElementById("edit-task-priority").value;
+    const newDueDate = document.getElementById("edit-task-due-date").value;
+
+    if (newText) {
+      task.text = newText;
+      task.priority = newPriority;
+      task.dueDate = newDueDate; // Update due date
+
+      // Update UI
+      listItem.querySelector("span").textContent = newText;
+      listItem.querySelector("span").nextSibling.textContent = newDueDate
+        ? `Due: ${newDueDate}`
+        : ""; // Update due date in UI
+      listItem.style.backgroundColor = priorityColors[newPriority] || "#f9f9f9";
+
+      updateLocalStorage();
+      hideEditModal();
+    }
+  };
+
+  document.getElementById("cancel-edit-btn").onclick = () => {
+    hideEditModal();
+  };
+
+  document.getElementById("edit-task-modal").style.display = "block";
+}
+
+function hideEditModal() {
+  document.getElementById("edit-task-modal").style.display = "none";
 }
 
 function updateLocalStorage() {

@@ -31,6 +31,24 @@
             <!-- Task List -->
             <ul id="task-list"></ul>
         </div>
+
+        <div id="edit-task-modal">
+                <div id="modal-content">
+                    <span class="close" id="close-modal">&times;</span>
+                    <h2>Edit Task</h2>
+                    <label for="edit-task-text">Task Text:</label>
+                    <input type="text" id="edit-task-text"><br>
+                    <label for="edit-task-priority">Priority:</label>
+                    <select id="edit-task-priority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select><br>
+                    <label for="edit-task-due-date">Due Date:</label>
+                    <input type="date" id="edit-task-due-date"><br>
+                    <button id="save-edit-btn">Save</button>
+                    <button id="cancel-edit-btn">Cancel</button>
+                </div>
         <script src="script.js"></script>
         <!-- Link to your JavaScript file -->
     </body>
