@@ -12,7 +12,7 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 500px;
+    width: 800px;
     text-align: center;
 }
 
@@ -48,20 +48,30 @@ button:hover {
 
 ul {
     list-style: none;
-    padding: 0;
+    padding: 10px;
 }
 
 li {
-    padding: 8px;
-    background-color: #f9f9f9;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; /* Use flexbox for the list item to align its children */
+    align-items: center; /* Center items vertically */
+    padding: 10px; /* Add padding for spacing */
+    background-color: #f9f9f9; /* Background color for list items */
+    margin-bottom: 8px; /* Margin between list items */
+    border-radius: 4px; /* Rounded corners */
+    text-align: left; /* Align text to the left */
+}
+
+li > span {
+    flex-grow: 1; /* Allow the text to take up available space */
+    text-align: left; /* Ensure text is left-aligned */
+}
+
+li button {
+    margin-left: 5px; /* Space between buttons if there are multiple */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
 }
 
 li.completed {
     text-decoration: line-through;
-    color: gray;
+    color: black;
 }
