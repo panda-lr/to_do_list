@@ -1,144 +1,140 @@
-// Get the buttons from html
+const priorityColors = {
+  low: "lightgreen",
+  medium: "lightyellow",
+  high: "lightcoral",
+};
 
-const taskInput = document.getElementById("task-input");
-const addTaskBtn = document.getElementById("add-task-btn");
-const taskList = document.getElementById("task-list");
+document.addEventListener("DOMContentLoaded", () => {
+  loadTasksFromLocalStorage();
 
-// Listener for user clicks
+  document.getElementById("add-task-btn").addEventListener("click", () => {
+    const text = document.getElementById("task-input").value;
+    const priority = document.getElementById("task-priority").value;
+    const dueDate = document.getElementById("task-due-date").value;
 
-addTaskBtn.addEventListener("click", addTask);
+    if (text) {
+      const task = {
+        id: Date.now(), // Unique identifier for the task
+        text: text,
+        priority: priority,
+        dueDate: dueDate, // Include due date
+        completed: false,
+      };
 
-//Load tasks
-loadTasksFromLocalStorage();
+      saveTaskToLocalStorage(task);
+      renderTask(task);
 
-// Task priority
-const prioritySelect = document.getElementById("task-priority");
+      // Clear input fields after adding task
+      document.getElementById("task-input").value = "";
+      document.getElementById("task-priority").value = "low";
+      document.getElementById("task-due-date").value = "";
+    }
+  });
+});
 
-// Due date
-const dueDateInput = document.getElementById("task-due-date");
-
-// Add task
-function addTask() {
-  const taskText = taskInput.value;
-  const taskPriority = prioritySelect.value;
-  const taskDueDate = dueDateInput.value;
-
-  if (taskText === "") {
-    alert("Please enter a task.");
-    return;
-  }
-
-  const task = {
-    text: taskText,
-    completed: false,
-    priority: taskPriority,
-    dueDate: taskDueDate,
-  };
-  saveTaskToLocalStorage(task);
-
-  renderTask(task);
-
-  taskInput.value = "";
-  dueDateInput.value = "";
-}
-
-// Save task to the browser
 function saveTaskToLocalStorage(task) {
-  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   tasks.push(task);
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Load tasks from browser
 function loadTasksFromLocalStorage() {
-  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  tasks.forEach((task) => {
-    renderTask(task);
-  });
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.forEach((task) => renderTask(task));
 }
 
-// Rendering the loaded tasks on screen
 function renderTask(task) {
   const listItem = document.createElement("li");
-  listItem.textContent = task.text;
+  listItem.setAttribute("data-id", task.id); // Store the unique id in the li element
 
-  if (task.completed) {
-    listItem.classList.add("completed");
-  }
+  listItem.style.backgroundColor = priorityColors[task.priority] || "#f9f9f9";
 
-  // Display due date
-  if (task.dueDate) {
-    const dueDateSpan = document.createElement("span");
-    dueDateSpan.textContent = ` (Due: ${task.dueDate})`;
-    dueDateSpan.style.marginLeft = "10px";
-    listItem.appendChild(dueDateSpan);
-  }
+  const taskText = document.createElement("span");
+  taskText.textContent = task.text;
 
-  // Apply priority styles
-  switch (task.priority) {
-    case "high":
-      listItem.style.color = "red";
-      break;
-    case "medium":
-      listItem.style.color = "orange";
-      break;
-    case "low":
-      listItem.style.color = "green";
-      break;
-  }
+  const dueDateText = document.createElement("span");
+  dueDateText.textContent = task.dueDate ? `Due: ${task.dueDate}` : "";
+  dueDateText.style.marginLeft = "10px";
+  dueDateText.style.fontStyle = "italic"; // Optional styling
 
-  // Add edit button
   const editBtn = document.createElement("button");
   editBtn.textContent = "Edit";
-  editBtn.style.marginRight = "10px";
+  editBtn.className = "edit";
+  editBtn.style.marginLeft = "5px";
   editBtn.addEventListener("click", () => {
-    const newTaskText = prompt("Edit task:", task.text);
-    if (newTaskText !== null && newTaskText.trim() !== "") {
-      task.text = newTaskText.trim();
-      listItem.firstChild.textContent = task.text;
+    const newText = prompt("Edit task text:", task.text);
+    const newPriority = prompt(
+      "Edit task priority (low, medium, high):",
+      task.priority,
+    );
+    const newDueDate = prompt("Edit task due date:", task.dueDate);
+
+    if (newText && newPriority) {
+      task.text = newText;
+      task.priority = newPriority;
+      task.dueDate = newDueDate; // Update due date
+
+      taskText.textContent = newText;
+      dueDateText.textContent = newDueDate ? `Due: ${newDueDate}` : ""; // Update due date in UI
+      listItem.style.backgroundColor = priorityColors[newPriority] || "#f9f9f9";
+
       updateLocalStorage();
     }
   });
 
-  // Add complete button
   const completeBtn = document.createElement("button");
   completeBtn.textContent = "Complete";
-  completeBtn.style.marginRight = "10px";
+  completeBtn.className = "complete";
+  completeBtn.style.marginLeft = "5px";
   completeBtn.addEventListener("click", () => {
     task.completed = !task.completed;
     listItem.classList.toggle("completed");
     updateLocalStorage();
   });
 
-  // Add delete button
   const deleteBtn = document.createElement("button");
   deleteBtn.textContent = "Delete";
+  deleteBtn.className = "delete";
+  deleteBtn.style.marginLeft = "5px";
   deleteBtn.addEventListener("click", () => {
-    taskList.removeChild(listItem);
-    deleteTaskFromLocalStorage(task);
+    listItem.remove();
+    deleteTaskFromLocalStorage(task.id);
   });
 
+  listItem.appendChild(taskText);
+  listItem.appendChild(dueDateText); // Append due date to list item
   listItem.appendChild(editBtn);
   listItem.appendChild(completeBtn);
   listItem.appendChild(deleteBtn);
-  taskList.appendChild(listItem);
+
+  document.getElementById("task-list").appendChild(listItem);
 }
 
-// Update saved tasks
 function updateLocalStorage() {
-  let tasks = [];
-  taskList.childNodes.forEach((listItem) => {
-    tasks.push({
-      text: listItem.textContent.replace("CompleteDelete", "").trim(),
-      completed: listItem.classList.contains("completed"),
-    });
+  const tasks = Array.from(document.querySelectorAll("li")).map((li) => {
+    const taskText = li.querySelector("span").textContent;
+    const priority = Object.keys(priorityColors).find(
+      (color) => priorityColors[color] === li.style.backgroundColor,
+    );
+    const completed = li.classList.contains("completed");
+    const dueDate = li.querySelector("span").nextSibling
+      ? li.querySelector("span").nextSibling.textContent.replace("Due: ", "")
+      : ""; // Get due date
+    const id = parseInt(li.getAttribute("data-id")); // Ensure the id is parsed as an integer
+    return {
+      id: id,
+      text: taskText,
+      priority: priority || "low",
+      dueDate: dueDate,
+      completed: completed,
+    };
   });
+
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Delete task
-function deleteTaskFromLocalStorage(task) {
+function deleteTaskFromLocalStorage(taskId) {
   let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  tasks = tasks.filter((t) => t.text !== task.text);
+  tasks = tasks.filter((task) => task.id !== taskId);
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
